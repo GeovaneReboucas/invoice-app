@@ -1,7 +1,38 @@
 <template>
-  <h1>Invoice</h1>
-  <router-view></router-view>
+  <div>
+    <div v-if="!isMobile" class="app flex flex-column">
+      <Navigation />
+
+      <div class="app-content flex flex-content">
+        <router-view />
+      </div>
+    </div>
+
+    <div v-else class="mobile-message flex flex-column">
+      <h2>Desculpe, a aplicação não tem suporte para dispositivos celulares!</h2>
+      <p>Para usar esse sistema, por favor use um computador ou tablet.</p>
+    </div>
+  </div>
 </template>
+
+<script setup lang="ts">
+import Navigation from './components/Navigation.vue';
+import { ref } from 'vue';
+
+
+const isMobile = ref(false)
+function checkScreen(){ 
+  const windowWidth = window.innerWidth;
+  if(windowWidth <= 750){
+    return isMobile.value = true
+  }
+
+  isMobile.value = false
+}
+
+checkScreen();
+window.addEventListener('resize', checkScreen)
+</script>
 
 <style lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
@@ -11,7 +42,34 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
+}
+
+.app{
   background-color: #141625;
+  min-height: 100vh;
+
+  @media(min-width: 900px) {
+    flex-direction: row !important;
+  }
+
+  .app-content{
+    padding: 0 20px;
+    flex: 1;
+    position: relative;
+  }
+}
+
+.mobile-message{
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #141625;
+  color: #fff;
+
+  p{
+    margin-top: 16px;
+  }
 }
 
 button,
@@ -81,6 +139,7 @@ button,
     border-radius: 50%;
     margin-right: 8px;
   }
+
   font-size: 12px;
   margin-right: 30px;
   align-items: center;
@@ -92,6 +151,7 @@ button,
   &::before {
     background-color: #33d69f;
   }
+
   color: #33d69f;
   background-color: rgba(51, 214, 160, 0.1);
 }
@@ -100,6 +160,7 @@ button,
   &::before {
     background-color: #ff8f00;
   }
+
   color: #ff8f00;
   background-color: rgba(255, 145, 0, 0.1);
 }
@@ -108,6 +169,7 @@ button,
   &::before {
     background-color: #dfe3fa;
   }
+
   color: #dfe3fa;
   background-color: rgba(223, 227, 250, 0.1);
 }
