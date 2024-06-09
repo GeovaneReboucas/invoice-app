@@ -3,8 +3,9 @@
     <div v-if="!isMobile" class="app flex flex-column">
       <Navigation />
 
-      <div class="app-content flex flex-content">
-        <router-view />
+      <div class="app-content flex flex-column">
+        <InvoiceModal />
+        <RouterView />
       </div>
     </div>
 
@@ -17,13 +18,14 @@
 
 <script setup lang="ts">
 import Navigation from './components/Navigation.vue';
+import InvoiceModal from './components/InvoiceModal.vue';
+
 import { ref } from 'vue';
 
-
 const isMobile = ref(false)
-function checkScreen(){ 
+function checkScreen() {
   const windowWidth = window.innerWidth;
-  if(windowWidth <= 750){
+  if (windowWidth <= 750) {
     return isMobile.value = true
   }
 
@@ -44,7 +46,7 @@ window.addEventListener('resize', checkScreen)
   font-family: "Poppins", sans-serif;
 }
 
-.app{
+.app {
   background-color: #141625;
   min-height: 100vh;
 
@@ -52,14 +54,14 @@ window.addEventListener('resize', checkScreen)
     flex-direction: row !important;
   }
 
-  .app-content{
+  .app-content {
     padding: 0 20px;
     flex: 1;
     position: relative;
   }
 }
 
-.mobile-message{
+.mobile-message {
   text-align: center;
   justify-content: center;
   align-items: center;
@@ -67,7 +69,7 @@ window.addEventListener('resize', checkScreen)
   background-color: #141625;
   color: #fff;
 
-  p{
+  p {
     margin-top: 16px;
   }
 }
@@ -81,6 +83,11 @@ button,
   font-size: 12px;
   margin-right: 8px;
   color: #fff;
+  transition: filter 0.2s;
+
+  &:hover {
+    filter: brightness(0.8);
+  }
 }
 
 .dark-purple {
