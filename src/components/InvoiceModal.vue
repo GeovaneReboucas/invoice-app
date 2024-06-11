@@ -137,8 +137,9 @@
 </template>
 
 <script setup lang="ts">
-import type { InvoiceItem } from '../types/InvoiceItem';
 import { ref } from 'vue';
+import { useInvoiceModalStore } from '@/stores/InvoiceModalStore';
+import type { InvoiceItem } from '../types/InvoiceItem';
 
 const billerStreetAddress = ref(null);
 const billerCity = ref(null);
@@ -161,6 +162,8 @@ const invoiceDraft = ref(null);
 const invoiceItemList = ref<InvoiceItem[]>([]);
 const invoiceTotal = ref(0);
 
+const invoiceModal = useInvoiceModalStore();
+
 function checkClick() {}
 function submitForm() {}
 function deleteInvoiceItem(item: InvoiceItem) {}
@@ -172,7 +175,9 @@ function addNewInvoiceItem() {
   } as InvoiceItem
   invoiceItemList.value.push(newItem)
 }
-function closeInvoice(){}
+function closeInvoice(){
+  invoiceModal.toggleVisibilityModal()
+}
 function saveDraft(){}
 function publishInvoice(){}
 
@@ -191,6 +196,7 @@ function publishInvoice(){}
   &::-webkit-scrollbar {
     display: none;
   }
+
   @media (min-width: 900px) {
     left: 90px;
   }

@@ -32,14 +32,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useInvoiceModalStore } from '@/stores/InvoiceModalStore';
 
-const filterMenu = ref(false) 
+
+const filterMenu = ref(false)
 function toggleFilterMenu(){
   filterMenu.value = !filterMenu.value
 }
 
+const invoiceModal = useInvoiceModalStore()
 function newInvoice(){
-
+  invoiceModal.toggleVisibilityModal();
 }
 </script>
 
@@ -57,7 +60,7 @@ function newInvoice(){
     .right{
       justify-content: flex-end;
       align-items: center;
-      
+
       .button, .filter{
         align-items: center;
 

@@ -4,7 +4,9 @@
       <Navigation />
 
       <div class="app-content flex flex-column">
-        <InvoiceModal />
+        <transition name="invoice">
+          <InvoiceModal v-if="invoiceModal.isOpen" />
+        </transition>
         <RouterView />
       </div>
     </div>
@@ -17,11 +19,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+
+import { useInvoiceModalStore } from './stores/InvoiceModalStore';
+
 import Navigation from './components/Navigation.vue';
 import InvoiceModal from './components/InvoiceModal.vue';
 
-import { ref } from 'vue';
-
+//Check Mobile Screen
 const isMobile = ref(false)
 function checkScreen() {
   const windowWidth = window.innerWidth;
@@ -34,6 +39,9 @@ function checkScreen() {
 
 checkScreen();
 window.addEventListener('resize', checkScreen)
+
+//Modal State
+const invoiceModal = useInvoiceModalStore();
 </script>
 
 <style lang="scss">
@@ -73,6 +81,16 @@ window.addEventListener('resize', checkScreen)
     margin-top: 16px;
   }
 }
+
+//Animated Invoice Modal
+.invoice-enter-active, .invoice-leave-active{
+  transition: 0.8s ease all;
+}
+
+.invoice-enter-from, .invoice-leave-to{
+  transform: translateX(-700px);
+}
+//
 
 button,
 .button {
