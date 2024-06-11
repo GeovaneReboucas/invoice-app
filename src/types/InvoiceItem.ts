@@ -1,5 +1,5 @@
 export interface InvoiceItem {
-  id: number;
+  id: string;
   itemName: string;
   price: number;
   qty: number;

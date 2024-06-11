@@ -66,12 +66,12 @@
         <div class="payment flex">
           <div class="input flex flex-column">
             <label for="invoiceDate">Data da Fatura</label>
-            <input disabled type="text" id="invoiceDate" v-model="invoiceDate">
+            <input type="date" id="invoiceDate" v-model="invoiceDate">
           </div>
 
           <div class="input flex flex-column">
             <label for="paymentDueDate">Data do Vencimento</label>
-            <input disabled type="text" id="paymentDueDate" v-model="paymentDueDate">
+            <input disabled type="date" id="paymentDueDate" v-model="paymentDueDate">
           </div>
         </div>
 
@@ -110,7 +110,7 @@
                 <input type="text" v-model="item.price">
               </td>
               <td class="total flex">${{ (item.qty * item.price) }}</td>
-              <img src="@/assets/icon-delete.svg" @click="deleteInvoiceItem(item)">
+              <img src="@/assets/icon-delete.svg" @click="deleteInvoiceItem(item.id)">
             </tr>
           </table>
 
@@ -137,7 +137,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import moment from 'moment';
+import { v4 as uuidv4 } from 'uuid';
+
 import { useInvoiceModalStore } from '@/stores/InvoiceModalStore';
 import type { InvoiceItem } from '../types/InvoiceItem';
 
@@ -152,10 +155,10 @@ const clientCity = ref(null);
 const clientZipCode = ref(null);
 const clientCountry = ref(null);
 const invoiceDateUnix = ref(null);
-const invoiceDate = ref(null);
-const paymentTerms = ref(null);
+const invoiceDate = ref();
+const paymentTerms = ref(30);
 const paymentDueDateUnix = ref(null);
-const paymentDueDate = ref(null);
+const paymentDueDate = ref<string | null>(null);
 const productDescription = ref(null);
 const invoicePending = ref(null);
 const invoiceDraft = ref(null);
@@ -164,22 +167,37 @@ const invoiceTotal = ref(0);
 
 const invoiceModal = useInvoiceModalStore();
 
-function checkClick() {}
-function submitForm() {}
-function deleteInvoiceItem(item: InvoiceItem) {}
+//Invoice Modal Events
+function checkClick() { }
+function submitForm() { }
+
+function deleteInvoiceItem(id: string) {
+  invoiceItemList.value = invoiceItemList.value.filter(item => item.id !== id)
+}
+
 function addNewInvoiceItem() {
   const newItem = {
+    id: uuidv4(),
     itemName: '',
     qty: 0,
     price: 0,
-  } as InvoiceItem
+  }
   invoiceItemList.value.push(newItem)
 }
-function closeInvoice(){
+function closeInvoice() {
   invoiceModal.toggleVisibilityModal()
 }
-function saveDraft(){}
-function publishInvoice(){}
+function saveDraft() { }
+function publishInvoice() { }
+//
+
+//paymentTerms and invoiceDate watch
+watch([paymentTerms, invoiceDate], ([newPaymentTerms, newInvoiceDate]) => {
+  if (newPaymentTerms && newInvoiceDate) {
+    paymentDueDate.value = moment(newInvoiceDate).add(newPaymentTerms, 'days').format("YYYY-MM-DD")
+  }
+});
+//
 
 </script>
 
@@ -260,6 +278,10 @@ function publishInvoice(){}
           .table-items {
             gap: 16px;
             font-size: 12px;
+
+            img{
+              cursor: pointer;
+            }
 
             .item-name {
               flex-basis: 50%;
