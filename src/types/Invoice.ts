@@ -12,11 +12,11 @@ export interface Invoice {
   clientZipCode: string;
   clientCountry: string;
   invoiceDate: string;
-  paymentTerms: string;
+  paymentTerms: number;
   paymentDueDate: string;
   productDescription: string;
-  invoicePending: string;
-  invoiceDraft: string;
+  invoicePending: boolean;
+  invoiceDraft: boolean;
   invoiceItemList: InvoiceItem[];
   invoiceTotal: number;
 }

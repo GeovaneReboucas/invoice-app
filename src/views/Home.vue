@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useInvoiceModalStore } from '@/stores/InvoiceModalStore';
+import { useInvoiceModalStore } from '@/stores/index';
 
 
 const filterMenu = ref(false)

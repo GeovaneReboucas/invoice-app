@@ -1,6 +1,7 @@
 <template>
   <div class="invoice-wrap flex flex-column" @click="checkClick" ref="invoiceWrap">
     <form class="invoice-content" @submit.prevent="submitForm">
+      <Loading v-if="loading" />
       <h1>Nova Fatura</h1>
 
       <!-- Bill from -->
@@ -8,21 +9,21 @@
         <h4>Fatura de</h4>
         <div class="input flex flex-column">
           <label for="billerStreetAddress">Endereço</label>
-          <input required type="text" id="billerStreetAddress" v-model="billerStreetAddress">
+          <input required type="text" id="billerStreetAddress" v-model="invoice.billerStreetAddress">
         </div>
 
         <div class="location-details flex">
           <div class="input flex flex-column">
             <label for="billerCity">Cidade</label>
-            <input required type="text" id="billerCity" v-model="billerCity">
+            <input required type="text" id="billerCity" v-model="invoice.billerCity">
           </div>
           <div class="input flex flex-column">
             <label for="billerZipCode">CEP</label>
-            <input required type="text" id="billerZipCode" v-model="billerZipCode">
+            <input required type="text" id="billerZipCode" v-model="invoice.billerZipCode">
           </div>
           <div class="input flex flex-column">
             <label for="billerCountry">País</label>
-            <input required type="text" id="billerCountry" v-model="billerCountry">
+            <input required type="text" id="billerCountry" v-model="invoice.billerCountry">
           </div>
         </div>
       </div>
@@ -32,31 +33,31 @@
         <h4>Fatura para</h4>
         <div class="input flex flex-column">
           <label for="clientName">Nome do Cliente</label>
-          <input required type="text" id="clientName" v-model="clientName">
+          <input required type="text" id="clientName" v-model="invoice.clientName">
         </div>
 
         <div class="input flex flex-column">
           <label for="clientEmail">Email do Cliente</label>
-          <input required type="text" id="clientEmail" v-model="clientEmail">
+          <input required type="text" id="clientEmail" v-model="invoice.clientEmail">
         </div>
 
         <div class="input flex flex-column">
           <label for="clientStreetAddress">Endereço do Cliente</label>
-          <input required type="text" id="clientStreetAddress" v-model="clientStreetAddress">
+          <input required type="text" id="clientStreetAddress" v-model="invoice.clientStreetAddress">
         </div>
 
         <div class="location-details flex">
           <div class="input flex flex-column">
             <label for="clientCity">Cidade</label>
-            <input required type="text" id="clientCity" v-model="clientCity">
+            <input required type="text" id="clientCity" v-model="invoice.clientCity">
           </div>
           <div class="input flex flex-column">
             <label for="clientZipCode">CEP</label>
-            <input required type="text" id="clientZipCode" v-model="clientZipCode">
+            <input required type="text" id="clientZipCode" v-model="invoice.clientZipCode">
           </div>
           <div class="input flex flex-column">
             <label for="clientCountry">País</label>
-            <input required type="text" id="clientCountry" v-model="clientCountry">
+            <input required type="text" id="clientCountry" v-model="invoice.clientCountry">
           </div>
         </div>
       </div>
@@ -66,18 +67,18 @@
         <div class="payment flex">
           <div class="input flex flex-column">
             <label for="invoiceDate">Data da Fatura</label>
-            <input type="date" id="invoiceDate" v-model="invoiceDate">
+            <input type="date" id="invoiceDate" v-model="invoice.invoiceDate">
           </div>
 
           <div class="input flex flex-column">
             <label for="paymentDueDate">Data do Vencimento</label>
-            <input disabled type="date" id="paymentDueDate" v-model="paymentDueDate">
+            <input disabled type="date" id="paymentDueDate" v-model="invoice.paymentDueDate">
           </div>
         </div>
 
         <div class="input flex flex-column">
           <label for="paymentTerms">Termos do Pagamento</label>
-          <select id="paymentTerms" required v-model="paymentTerms">
+          <select id="paymentTerms" required v-model="invoice.paymentTerms">
             <option value="30">30 dias líquidos</option>
             <option value="60">60 dias líquidos</option>
           </select>
@@ -85,7 +86,7 @@
 
         <div class="input flex flex-column">
           <label for="productDescription">Descrição do Produto</label>
-          <input required type="text" id="productDescription" v-model="productDescription">
+          <input required type="text" id="productDescription" v-model="invoice.productDescription">
         </div>
 
         <div class="work-items">
@@ -99,15 +100,15 @@
               <th class="total">Total</th>
             </tr>
 
-            <tr class="table-items flex" v-for="(item, index) in invoiceItemList" :key="index">
+            <tr class="table-items flex" v-for="(item, index) in invoice.invoiceItemList" :key="index">
               <td class="item-name">
                 <input type="text" v-model="item.itemName">
               </td>
               <td class="qty">
-                <input type="text" v-model="item.qty">
+                <input type="number" v-model="item.qty">
               </td>
               <td class="price">
-                <input type="text" v-model="item.price">
+                <input type="number" step="any" v-model="item.price">
               </td>
               <td class="total flex">${{ (item.qty * item.price) }}</td>
               <img src="@/assets/icon-delete.svg" @click="deleteInvoiceItem(item.id)">
@@ -124,12 +125,12 @@
       <!-- Save/Exit -->
       <div class="save flex">
         <div class="left">
-          <button class="red" @click="closeInvoice">Cancel</button>
+          <button type="button" class="red" @click="closeInvoice">Cancel</button>
         </div>
 
         <div class="right flex">
-          <button class="dark-purple" @click="saveDraft">Salvar Draft</button>
-          <button class="purple" @click="publishInvoice">Criar Fatura</button>
+          <button type="submit" class="dark-purple" @click="saveDraft">Salvar Draft</button>
+          <button type="submit" class="purple" @click="publishInvoice">Criar Fatura</button>
         </div>
       </div>
     </form>
@@ -137,42 +138,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, reactive } from 'vue';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
-import { useInvoiceModalStore } from '@/stores/InvoiceModalStore';
-import type { InvoiceItem } from '../types/InvoiceItem';
+import { db } from '@/firebase/firebaseInit';
+import { useInvoiceModalStore, useWarningModalStore } from '@/stores/index';
+import type { Invoice } from '@/types/Invoice';
+import { addDoc, collection } from 'firebase/firestore';
 
-const billerStreetAddress = ref(null);
-const billerCity = ref(null);
-const billerZipCode = ref(null);
-const billerCountry = ref(null);
-const clientName = ref(null);
-const clientEmail = ref(null);
-const clientStreetAddress = ref(null);
-const clientCity = ref(null);
-const clientZipCode = ref(null);
-const clientCountry = ref(null);
-const invoiceDateUnix = ref(null);
-const invoiceDate = ref();
-const paymentTerms = ref(30);
-const paymentDueDateUnix = ref(null);
-const paymentDueDate = ref<string | null>(null);
-const productDescription = ref(null);
-const invoicePending = ref(null);
-const invoiceDraft = ref(null);
-const invoiceItemList = ref<InvoiceItem[]>([]);
-const invoiceTotal = ref(0);
+import Loading from './Loading.vue';
 
-const invoiceModal = useInvoiceModalStore();
+const loading = ref(false);
+const invoiceWrap = ref(false);
 
-//Invoice Modal Events
-function checkClick() { }
-function submitForm() { }
+const invoice = reactive<Invoice>({
+  billerStreetAddress: '',
+  billerCity: '',
+  billerZipCode: '',
+  billerCountry: '',
+  clientName: '',
+  clientEmail: '',
+  clientStreetAddress: '',
+  clientCity: '',
+  clientZipCode: '',
+  clientCountry: '',
+  // invoiceDateUnix: '',
+  invoiceDate: '',
+  paymentTerms: 30,
+  // paymentDueDateUnix: '',
+  paymentDueDate: '',
+  productDescription: '',
+  invoicePending: false,
+  invoiceDraft: false,
+  invoiceItemList: [],
+  invoiceTotal: 0,
+});
 
+const useInvoiceModal = useInvoiceModalStore();
+const useWarningModal = useWarningModalStore();
+
+//Invoice Items functions
 function deleteInvoiceItem(id: string) {
-  invoiceItemList.value = invoiceItemList.value.filter(item => item.id !== id)
+  invoice.invoiceItemList = invoice.invoiceItemList.filter(item => item.id !== id)
 }
 
 function addNewInvoiceItem() {
@@ -182,22 +190,62 @@ function addNewInvoiceItem() {
     qty: 0,
     price: 0,
   }
-  invoiceItemList.value.push(newItem)
+  invoice.invoiceItemList.push(newItem)
 }
+
+function calculateInvoiceTotal() {
+  invoice.invoiceTotal = invoice.invoiceItemList.reduce((acc, item) => {
+    return acc += item.price * item.qty
+  }, 0)
+}
+//
+
+//Invoice Modal functions
+function checkClick(e: any) {
+  if(e.target == invoiceWrap.value){
+    useWarningModal.toggleVisibilityModal()
+  }
+}
+
 function closeInvoice() {
-  invoiceModal.toggleVisibilityModal()
+  useInvoiceModal.toggleVisibilityModal()
 }
-function saveDraft() { }
-function publishInvoice() { }
+
+function saveDraft() {
+  invoice.invoiceDraft = true
+}
+
+function publishInvoice() {
+  invoice.invoicePending = true
+}
+
+async function uploadInvoice() {
+  try{
+    if (!invoice.invoiceItemList.length) {
+      return alert('Por favor preencha o formulário com os itens da fatura!')
+    }
+    loading.value = true;
+    calculateInvoiceTotal()
+    const respFirebase = await addDoc(collection(db, 'invoices'), {
+      invoice
+    });
+    alert('Fatura criada com sucesso!')
+    closeInvoice();
+    loading.value = false;
+  }catch(error){ console.log('error', error) }
+}
+
+async function submitForm() {
+  await uploadInvoice()
+}
 //
 
 //paymentTerms and invoiceDate watch
-watch([paymentTerms, invoiceDate], ([newPaymentTerms, newInvoiceDate]) => {
-  if (newPaymentTerms && newInvoiceDate) {
-    paymentDueDate.value = moment(newInvoiceDate).add(newPaymentTerms, 'days').format("YYYY-MM-DD")
+watch([() => invoice.invoiceDate, () => invoice.paymentTerms], ([newInvoiceDate, newPaymentTerms]) => {
+  if (newPaymentTerms && newInvoiceDate !== '') {
+    invoice.paymentDueDate = moment(newInvoiceDate).add(newPaymentTerms, 'days').format("YYYY-MM-DD")
   }
 });
-//
 
 </script>
 
@@ -279,7 +327,7 @@ watch([paymentTerms, invoiceDate], ([newPaymentTerms, newInvoiceDate]) => {
             gap: 16px;
             font-size: 12px;
 
-            img{
+            img {
               cursor: pointer;
             }
 

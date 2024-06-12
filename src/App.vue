@@ -4,8 +4,9 @@
       <Navigation />
 
       <div class="app-content flex flex-column">
+        <WarningModal v-if="useWarningModal.isOpen" />
         <transition name="invoice">
-          <InvoiceModal v-if="invoiceModal.isOpen" />
+          <InvoiceModal v-if="useInvoiceModal.isOpen" />
         </transition>
         <RouterView />
       </div>
@@ -21,10 +22,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { useInvoiceModalStore } from './stores/InvoiceModalStore';
+import { useInvoiceModalStore, useWarningModalStore } from './stores/index';
 
 import Navigation from './components/Navigation.vue';
 import InvoiceModal from './components/InvoiceModal.vue';
+import WarningModal from './components/WarningModal.vue';
 
 //Check Mobile Screen
 const isMobile = ref(false)
@@ -41,7 +43,8 @@ checkScreen();
 window.addEventListener('resize', checkScreen)
 
 //Modal State
-const invoiceModal = useInvoiceModalStore();
+const useInvoiceModal = useInvoiceModalStore();
+const useWarningModal = useWarningModalStore();
 </script>
 
 <style lang="scss">
