@@ -1,3 +1,4 @@
-import Home from '../views/Home.vue'
+import InvoicesView from './InvoicesView.vue'
+import InvoiceView from './InvoiceView.vue'
 
-export { Home }
+export { InvoicesView, InvoiceView }

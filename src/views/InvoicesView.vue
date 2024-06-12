@@ -1,9 +1,10 @@
 <template>
-  <div class="home container">
+  <Loading v-if="loading" />
+  <div class="invoices container" v-else>
     <div class="header flex">
       <div class="left flex flex-column">
         <h1>Faturas</h1>
-        <span>Há 4 faturas no total</span>
+        <span>Há {{ invoices.length }} faturas no total</span>
       </div>
       <div class="right flex">
         <div class="filter flex" @click="toggleFilterMenu">
@@ -47,8 +48,10 @@ import { db } from '@/firebase/firebaseInit';
 import { useInvoiceModalStore } from '@/stores/index';
 
 import Invoice from '@/components/Invoice.vue';
+import Loading from '@/components/Loading.vue';
 import type { Invoice as InvoiceType } from '@/types/Invoice';
 
+const loading = ref(true)
 const filterMenu = ref(false)
 function toggleFilterMenu() {
   filterMenu.value = !filterMenu.value
@@ -61,18 +64,25 @@ function newInvoice() {
 
 const invoices = ref<InvoiceType[]>([])
 async function getInvoices() {
-  return new Promise((resolve) => {
-    const collRefQuery = query(
-      collection(db, 'invoices'),
-      orderBy('createdAt')
-    );
-    const unsub = onSnapshot(collRefQuery, (snapShot) => {
-      const invoicesData = snapShot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as InvoiceType));
-      invoices.value = invoicesData;
-      resolve(invoices);
+  loading.value = true;
+  try{
+    return new Promise((resolve) => {
+      const collRefQuery = query(
+        collection(db, 'invoices'),
+        orderBy('createdAt')
+      );
+      const unsub = onSnapshot(collRefQuery, (snapShot) => {
+        const invoicesData = snapShot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as InvoiceType));
+        invoices.value = invoicesData;
+        resolve(invoices);
+        loading.value = false;
+      });
+      return () => unsub();
     });
-    return () => unsub();
-  });
+  }catch(error){
+    loading.value = false;
+    console.error(error)
+  }
 };
 onBeforeMount(async () => {
   await getInvoices();
@@ -81,7 +91,7 @@ onBeforeMount(async () => {
 </script>
 
 <style lang="scss" scoped>
-.home {
+.invoices {
   color: #fff;
 
   .header {
@@ -170,7 +180,7 @@ onBeforeMount(async () => {
 
     h3{
       font-size: 20px;
-      margin-top: 40px;
+      margin-top: 24px;
     }
 
     p{
@@ -178,7 +188,7 @@ onBeforeMount(async () => {
       max-width: 224px;
       font-size: 14px;
       font-weight: 300;
-      margin-top: 16px;
+      margin-top: 12px;
     }
   }
 }

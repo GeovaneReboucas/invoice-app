@@ -3,14 +3,20 @@ import * as views from '../views/index'
 
 const routes: any = [
   {
-    path: '/home',
-    name: 'Home',
-    component: views.Home
-  },
-  {
-    path: '/invoice/:id',
-    name: 'Invoice',
-    component: views.Home
+    path: '/invoices',
+    name: 'Invoices',
+    children: [
+      {
+        path: '',
+        name: 'Invoices',
+        component: views.InvoicesView
+      },
+      {
+        path: ':id',
+        name: 'Invoice',
+        component: views.InvoiceView
+      }
+    ]
   },
 ]
 
