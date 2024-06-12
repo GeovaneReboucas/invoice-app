@@ -9,7 +9,7 @@
       <div class="right flex">
         <div class="filter flex" @click="toggleFilterMenu">
           <span>Filtrar por status</span>
-          <img src="@/assets/icon-arrow-down.svg">
+          <img src="/icon-arrow-down.svg">
 
           <ul class="filter-menu" v-show="filterMenu">
             <li>Draft</li>
@@ -21,7 +21,7 @@
 
         <div class="button flex" @click="newInvoice">
           <div class="inner-button flex">
-            <img src="@/assets/icon-plus.svg" alt="">
+            <img src="/icon-plus.svg" alt="">
           </div>
 
           <span>Nova Fatura</span>
@@ -33,7 +33,7 @@
       <invoice v-for="(invoice, index) in invoices" :key="index" :invoice="invoice" />
     </div>
     <div class="empty flex flex-column" v-else>
-      <img src="@/assets/illustration-empty.svg">
+      <img src="/illustration-empty.svg">
       <h3>Nenhuma fatura criada.</h3>
       <p>Crie uma nova fatura clicando no botão de Nova Fatura e preencha o formulário.</p>
     </div>

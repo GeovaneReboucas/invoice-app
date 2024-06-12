@@ -4,7 +4,6 @@ import * as views from '../views/index'
 const routes: any = [
   {
     path: '/invoices',
-    name: 'Invoices',
     children: [
       {
         path: '',

@@ -111,12 +111,12 @@
                 <input type="number" step="any" v-model="item.price">
               </td>
               <td class="total flex">${{ (item.qty * item.price) }}</td>
-              <img src="@/assets/icon-delete.svg" @click="deleteInvoiceItem(item.id)">
+              <img src="/icon-delete.svg" @click="deleteInvoiceItem(item.id)">
             </tr>
           </table>
 
           <div class="flex button" @click="addNewInvoiceItem">
-            <img src="@/assets/icon-plus.svg">
+            <img src="/icon-plus.svg">
             Adicionar novo Item
           </div>
         </div>
@@ -266,7 +266,7 @@ watch([() => invoice.invoiceDate, () => invoice.paymentTerms], ([newInvoiceDate,
   }
 
   @media (min-width: 900px) {
-    left: 90px;
+    left: 80px;
   }
 
   .invoice-content {

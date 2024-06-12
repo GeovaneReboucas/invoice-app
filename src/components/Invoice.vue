@@ -2,7 +2,7 @@
   <router-link class="invoice flex" :to="{ name: 'Invoice', params: { id: invoice.id } }">
     <div class="left flex">
       <span class="tracking-number">#{{ invoice.id }}</span>
-      <span class="due-date">{{ invoice.paymentDueDate }}</span>
+      <span class="due-date">{{ moment(invoice.paymentDueDate).format('DD/MM/YYYY') }}</span>
       <span class="person">{{ invoice.clientName }}</span>
     </div>
     <div class="right flex">
@@ -17,13 +17,15 @@
         <span v-if="invoice.invoicePending">Pendente</span>
       </div>
       <div class="icon">
-        <img src="@/assets/icon-arrow-right.svg">
+        <img src="/icon-arrow-right.svg">
       </div>
     </div>
   </router-link>
 </template>
 
 <script setup lang="ts">
+import moment from 'moment';
+
 import type { Invoice } from '@/types/Invoice';
 
 interface props {
@@ -45,30 +47,30 @@ const { invoice } = defineProps<props>()
   background-color: #1e2139;
   align-items: center;
 
-  span{
+  span {
     font-size: 13px;
   }
 
-  .left{
+  .left {
     align-items: center;
     flex-basis: 60%;
     gap: 16px;
 
-    span{
+    span {
       flex: 1;
     }
 
-    .tracking-number{
+    .tracking-number {
       text-transform: uppercase;
     }
   }
 
-  .right{
+  .right {
     gap: 16px;
     flex-basis: 40%;
     align-items: center;
 
-    .price{
+    .price {
       flex: 1;
       font-size: 16px;
       font-weight: 600;

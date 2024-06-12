@@ -1,42 +1,25 @@
 <template>
   <header class="flex">
-    <div class="branding flex">
-      <img src="@/assets/file-invoice-dollar-solid.png" alt="">
-    </div>
+    <ButtonNavigation to="Invoices" imgSrc="file-invoice-dollar-solid.png" />
   </header>
 </template>
 
 <script setup lang="ts">
-
+import ButtonNavigation from '@/components/ButtonNavigation.vue'
 </script>
 
 <style scoped lang="scss">
 header {
   z-index: 99;
   flex-direction: row;
+  gap: 8px;
   background-color: #1e2139;
 
   @media(min-width: 900px) {
     min-height: 100%;
-    min-width: 90px;
+    min-width: 80px;
     flex-direction: column;
     border-radius: 0 20px 20px 0;
-  }
-
-  .branding {
-    border-radius: 0 20px 20px 0;
-    background-color: #7c5dfa;
-    justify-content: center;
-    padding: 24px;
-
-    @media(min-width: 900px) {
-      width: 100%;
-    }
-  }
-
-  img {
-    width: auto;
-    height: 30px;
   }
 }
 </style>
