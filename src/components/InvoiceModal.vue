@@ -152,7 +152,7 @@ import Loading from './Loading.vue';
 const loading = ref(false);
 const invoiceWrap = ref(false);
 
-const invoice = reactive<Invoice>({
+const invoice = reactive<Omit<Invoice, 'id'>>({
   billerStreetAddress: '',
   billerCity: '',
   billerZipCode: '',
@@ -169,6 +169,7 @@ const invoice = reactive<Invoice>({
   // paymentDueDateUnix: '',
   paymentDueDate: '',
   productDescription: '',
+  invoicePaid: false,
   invoicePending: false,
   invoiceDraft: false,
   invoiceItemList: [],
@@ -227,7 +228,8 @@ async function uploadInvoice() {
     loading.value = true;
     calculateInvoiceTotal()
     const respFirebase = await addDoc(collection(db, 'invoices'), {
-      invoice
+      ...invoice,
+      createdAt: moment().toISOString()
     });
     alert('Fatura criada com sucesso!')
     closeInvoice();

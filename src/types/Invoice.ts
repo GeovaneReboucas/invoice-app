@@ -1,6 +1,7 @@
 import type { InvoiceItem } from "./InvoiceItem";
 
 export interface Invoice {
+  id: string;
   billerStreetAddress: string;
   billerCity: string;
   billerZipCode: string;
@@ -15,6 +16,7 @@ export interface Invoice {
   paymentTerms: number;
   paymentDueDate: string;
   productDescription: string;
+  invoicePaid: boolean;
   invoicePending: boolean;
   invoiceDraft: boolean;
   invoiceItemList: InvoiceItem[];

@@ -6,7 +6,12 @@ const routes: any = [
     path: '/home',
     name: 'Home',
     component: views.Home
-  }
+  },
+  {
+    path: '/invoice/:id',
+    name: 'Invoice',
+    component: views.Home
+  },
 ]
 
 const router = createRouter({

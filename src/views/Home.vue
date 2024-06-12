@@ -27,60 +27,96 @@
         </div>
       </div>
     </div>
+
+    <div v-if="invoices.length">
+      <invoice v-for="(invoice, index) in invoices" :key="index" :invoice="invoice" />
+    </div>
+    <div class="empty flex flex-column" v-else>
+      <img src="@/assets/illustration-empty.svg">
+      <h3>Nenhuma fatura criada.</h3>
+      <p>Crie uma nova fatura clicando no botão de Nova Fatura e preencha o formulário.</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { db } from '@/firebase/firebaseInit';
+
 import { useInvoiceModalStore } from '@/stores/index';
 
+import Invoice from '@/components/Invoice.vue';
+import type { Invoice as InvoiceType } from '@/types/Invoice';
 
 const filterMenu = ref(false)
-function toggleFilterMenu(){
+function toggleFilterMenu() {
   filterMenu.value = !filterMenu.value
 }
 
 const invoiceModal = useInvoiceModalStore()
-function newInvoice(){
+function newInvoice() {
   invoiceModal.toggleVisibilityModal();
 }
+
+const invoices = ref<InvoiceType[]>([])
+async function getInvoices() {
+  return new Promise((resolve) => {
+    const collRefQuery = query(
+      collection(db, 'invoices'),
+      orderBy('createdAt')
+    );
+    const unsub = onSnapshot(collRefQuery, (snapShot) => {
+      const invoicesData = snapShot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as InvoiceType));
+      invoices.value = invoicesData;
+      resolve(invoices);
+    });
+    return () => unsub();
+  });
+};
+onBeforeMount(async () => {
+  await getInvoices();
+})
+
 </script>
 
 <style lang="scss" scoped>
-.home{
+.home {
   color: #fff;
 
-  .header{
+  .header {
     margin-bottom: 65px;
 
-    .left, .right{
+    .left,
+    .right {
       flex: 1;
     }
 
-    .right{
+    .right {
       justify-content: flex-end;
       align-items: center;
 
-      .button, .filter{
+      .button,
+      .filter {
         align-items: center;
 
-        span{
+        span {
           font-size: 12px;
         }
       }
 
-      .filter{
+      .filter {
         cursor: pointer;
         position: relative;
         margin-right: 40px;
 
-        img{
+        img {
           margin-left: 12px;
           width: 9px;
           height: 5px;
         }
 
-        .filter-menu{
+        .filter-menu {
           width: 120px;
           position: absolute;
           top: 25px;
@@ -88,12 +124,12 @@ function newInvoice(){
           background-color: #1e2139;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
-          li{
+          li {
             cursor: pointer;
             font-size: 12px;
             padding: 10px 20px;
 
-            &:hover{
+            &:hover {
               color: #1e2139;
               background-color: #fff;
             }
@@ -101,12 +137,12 @@ function newInvoice(){
         }
       }
 
-      .button{
+      .button {
         padding: 8px 10px;
         background-color: #7c5dfa;
         border-radius: 40px;
 
-        .inner-button{
+        .inner-button {
           margin-right: 8px;
           border-radius: 50%;
           padding: 8px;
@@ -114,12 +150,35 @@ function newInvoice(){
           justify-content: center;
           background-color: #fff;
 
-          img{
+          img {
             width: 10px;
             height: 10px;
           }
         }
       }
+    }
+  }
+
+  .empty{
+    margin-top: 16px;
+    align-items: center;
+
+    img{
+      width: 214px;
+      width: 200px;
+    }
+
+    h3{
+      font-size: 20px;
+      margin-top: 40px;
+    }
+
+    p{
+      text-align: center;
+      max-width: 224px;
+      font-size: 14px;
+      font-weight: 300;
+      margin-top: 16px;
     }
   }
 }
