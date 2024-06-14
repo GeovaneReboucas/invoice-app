@@ -2,7 +2,7 @@
   <div class="invoice-wrap flex flex-column" @click="checkClick" ref="invoiceWrap">
     <form class="invoice-content" @submit.prevent="submitForm">
       <Loading v-if="loading" />
-      <h1>Nova Fatura</h1>
+      <h1>{{ invoiceId ? 'Editar Fatura' : 'Nova Fatura' }}</h1>
 
       <!-- Bill from -->
       <div class="bill-from flex flex-column">
@@ -129,8 +129,12 @@
         </div>
 
         <div class="right flex">
-          <button type="submit" class="dark-purple" @click="saveDraft">Salvar Draft</button>
-          <button type="submit" class="purple" @click="publishInvoice">Criar Fatura</button>
+          <button type="submit" class="dark-purple" @click="saveDraft" v-if="!invoiceId">
+            Salvar Draft
+          </button>
+          <button type="submit" class="purple" @click="publishInvoice">
+            {{ invoiceId ? 'Editar Fatura' : 'Criar Fatura' }}
+          </button>
         </div>
       </div>
     </form>
@@ -138,19 +142,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive } from 'vue';
+import { ref, watch, reactive, onBeforeMount } from 'vue';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
 import { db } from '@/firebase/firebaseInit';
 import { useInvoiceModalStore, useWarningModalStore } from '@/stores/index';
 import type { Invoice } from '@/types/Invoice';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 
 import Loading from './Loading.vue';
 
 const loading = ref(false);
 const invoiceWrap = ref(false);
+const invoiceId = ref<Invoice['id'] | undefined>(undefined);
 
 const invoice = reactive<Omit<Invoice, 'id'>>({
   billerStreetAddress: '',
@@ -195,15 +200,17 @@ function addNewInvoiceItem() {
 }
 
 function calculateInvoiceTotal() {
-  invoice.invoiceTotal = invoice.invoiceItemList.reduce((acc, item) => {
+  const total = invoice.invoiceItemList.reduce((acc, item) => {
     return acc += item.price * item.qty
   }, 0)
+
+  invoice.invoiceTotal = Number(total.toFixed(2))
 }
 //
 
 //Invoice Modal functions
 function checkClick(e: any) {
-  if(e.target == invoiceWrap.value){
+  if (e.target == invoiceWrap.value) {
     useWarningModal.toggleVisibilityModal()
   }
 }
@@ -211,7 +218,9 @@ function checkClick(e: any) {
 function closeInvoice() {
   useInvoiceModal.toggleVisibilityModal()
 }
+//
 
+//Functions In Create Invoice
 function saveDraft() {
   invoice.invoiceDraft = true
 }
@@ -220,8 +229,8 @@ function publishInvoice() {
   invoice.invoicePending = true
 }
 
-async function uploadInvoice() {
-  try{
+async function handleCreateInvoice() {
+  try {
     if (!invoice.invoiceItemList.length) {
       return alert('Por favor preencha o formulário com os itens da fatura!')
     }
@@ -234,12 +243,37 @@ async function uploadInvoice() {
     alert('Fatura criada com sucesso!')
     closeInvoice();
     loading.value = false;
-  }catch(error){ console.log('error', error) }
+  } catch (error) { console.log('error', error) }
+}
+
+async function handleEditInvoice() {
+  if(!invoiceId.value) return
+
+  loading.value = true;
+  calculateInvoiceTotal()
+  const docRef = doc(db, 'invoices', invoiceId.value)
+  await setDoc(docRef, invoice);
+  useInvoiceModal.toggleIsSubmitEdit()
+  loading.value = false;
+  closeInvoice();
+  alert('Fatura editada com sucesso!')
 }
 
 async function submitForm() {
-  await uploadInvoice()
+  invoiceId.value ?
+    await handleEditInvoice() :
+    await handleCreateInvoice()
 }
+//
+
+//Verify Edit Invoice
+onBeforeMount(() => {
+  if (!!useInvoiceModal.invoice) {
+    const { id, ...rest } = useInvoiceModal.invoice
+    Object.assign(invoice, rest);
+    invoiceId.value = id
+  }
+})
 //
 
 //paymentTerms and invoiceDate watch
@@ -248,7 +282,7 @@ watch([() => invoice.invoiceDate, () => invoice.paymentTerms], ([newInvoiceDate,
     invoice.paymentDueDate = moment(newInvoiceDate).add(newPaymentTerms, 'days').format("YYYY-MM-DD")
   }
 });
-
+//
 </script>
 
 <style scoped lang="scss">

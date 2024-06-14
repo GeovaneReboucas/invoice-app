@@ -3,7 +3,7 @@
     <div v-if="!isMobile" class="app flex flex-column">
       <Navigation />
 
-      <div class="app-content flex flex-column">
+      <div class="app-content flex flex-column" :style="overlayDynamicStyles">
         <WarningModal v-if="useWarningModal.isOpen" />
         <transition name="invoice">
           <InvoiceModal v-if="useInvoiceModal.isOpen" />
@@ -20,13 +20,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 import { useInvoiceModalStore, useWarningModalStore } from './stores/index';
 
 import Navigation from './components/Navigation.vue';
 import InvoiceModal from './components/InvoiceModal.vue';
 import WarningModal from './components/WarningModal.vue';
+
+//Modal State
+const useInvoiceModal = useInvoiceModalStore();
+const useWarningModal = useWarningModalStore();
+
+//Modal overlay style
+const overlayDynamicStyles = computed(() => ({
+  'background-color': useInvoiceModal.isOpen ? 'rgba(0, 0, 0, 0.5)' : 'transparent'
+}));
 
 //Check Mobile Screen
 const isMobile = ref(false)
@@ -41,10 +50,6 @@ function checkScreen() {
 
 checkScreen();
 window.addEventListener('resize', checkScreen)
-
-//Modal State
-const useInvoiceModal = useInvoiceModalStore();
-const useWarningModal = useWarningModalStore();
 </script>
 
 <style lang="scss">
