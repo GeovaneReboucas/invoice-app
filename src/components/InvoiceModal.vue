@@ -2,7 +2,7 @@
   <div class="invoice-wrap flex flex-column" @click="checkClick" ref="invoiceWrap">
     <form class="invoice-content" @submit.prevent="submitForm">
       <Loading v-if="loading" />
-      <h1>{{ invoiceId ? 'Editar Fatura' : 'Nova Fatura' }}</h1>
+      <h1>{{ invoice.id ? 'Editar Fatura' : 'Nova Fatura' }}</h1>
 
       <!-- Bill from -->
       <div class="bill-from flex flex-column">
@@ -129,11 +129,11 @@
         </div>
 
         <div class="right flex">
-          <button type="submit" class="dark-purple" @click="saveDraft" v-if="!invoiceId">
+          <button type="submit" class="dark-purple" @click="saveDraft" v-if="!invoice.id">
             Salvar Draft
           </button>
           <button type="submit" class="purple" @click="publishInvoice">
-            {{ invoiceId ? 'Editar Fatura' : 'Criar Fatura' }}
+            {{ invoice.id ? 'Editar Fatura' : 'Criar Fatura' }}
           </button>
         </div>
       </div>
@@ -146,18 +146,19 @@ import { ref, watch, reactive, onBeforeMount } from 'vue';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
-import { db } from '@/firebase/firebaseInit';
 import { useInvoiceModalStore, useWarningModalStore } from '@/stores/index';
 import type { Invoice } from '@/types/Invoice';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import { firebaseService } from '@/firebase/firebaseService';
+import { useRouter } from 'vue-router';
 
 import Loading from './Loading.vue';
 
+const router = useRouter();
 const loading = ref(false);
 const invoiceWrap = ref(false);
-const invoiceId = ref<Invoice['id'] | undefined>(undefined);
 
-const invoice = reactive<Omit<Invoice, 'id'>>({
+const invoice = reactive<Invoice>({
+  id: '',
   billerStreetAddress: '',
   billerCity: '',
   billerZipCode: '',
@@ -222,56 +223,39 @@ function closeInvoice() {
 
 //Functions In Create Invoice
 function saveDraft() {
-  invoice.invoiceDraft = true
+  invoice.invoicePending = false;
+  invoice.invoiceDraft = true;
 }
 
 function publishInvoice() {
-  invoice.invoicePending = true
+  invoice.invoiceDraft = false;
+  invoice.invoicePending = true;
 }
 
-async function handleCreateInvoice() {
+async function handleSaveInvoice() {
   try {
     if (!invoice.invoiceItemList.length) {
       return alert('Por favor preencha o formulário com os itens da fatura!')
     }
     loading.value = true;
     calculateInvoiceTotal()
-    const respFirebase = await addDoc(collection(db, 'invoices'), {
-      ...invoice,
-      createdAt: moment().toISOString()
-    });
-    alert('Fatura criada com sucesso!')
+    await firebaseService.save('invoices', invoice);
+    alert(invoice.id ? 'Fatura editada com sucesso' : 'Fatura criada com sucesso!')
+    router.go(0);
     closeInvoice();
     loading.value = false;
   } catch (error) { console.log('error', error) }
 }
 
-async function handleEditInvoice() {
-  if(!invoiceId.value) return
-
-  loading.value = true;
-  calculateInvoiceTotal()
-  const docRef = doc(db, 'invoices', invoiceId.value)
-  await setDoc(docRef, invoice);
-  useInvoiceModal.toggleIsSubmitEdit()
-  loading.value = false;
-  closeInvoice();
-  alert('Fatura editada com sucesso!')
-}
-
 async function submitForm() {
-  invoiceId.value ?
-    await handleEditInvoice() :
-    await handleCreateInvoice()
+  await handleSaveInvoice();
 }
 //
 
 //Verify Edit Invoice
 onBeforeMount(() => {
   if (!!useInvoiceModal.invoice) {
-    const { id, ...rest } = useInvoiceModal.invoice
-    Object.assign(invoice, rest);
-    invoiceId.value = id
+    Object.assign(invoice, useInvoiceModal.invoice);
   }
 })
 //

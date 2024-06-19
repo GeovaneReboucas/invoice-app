@@ -42,14 +42,13 @@
 
 <script setup lang="ts">
 import { onBeforeMount, ref } from 'vue';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseInit';
 
 import { useInvoiceModalStore } from '@/stores/index';
+import { firebaseService } from '@/firebase/firebaseService';
+import type { Invoice as InvoiceType } from '@/types/Invoice';
 
 import Invoice from '@/components/Invoice.vue';
 import Loading from '@/components/Loading.vue';
-import type { Invoice as InvoiceType } from '@/types/Invoice';
 
 const loading = ref(true)
 const filterMenu = ref(false)
@@ -66,24 +65,16 @@ const invoices = ref<InvoiceType[]>([])
 async function getInvoices() {
   loading.value = true;
   try{
-    return new Promise((resolve) => {
-      const collRefQuery = query(
-        collection(db, 'invoices'),
-        orderBy('createdAt')
-      );
-      const unsub = onSnapshot(collRefQuery, (snapShot) => {
-        const invoicesData = snapShot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as InvoiceType));
-        invoices.value = invoicesData;
-        resolve(invoices);
-        loading.value = false;
-      });
-      return () => unsub();
-    });
+    loading.value = true;
+    const resp = await firebaseService.findList('invoices') as InvoiceType[];
+    invoices.value = resp;
+    loading.value = false;
   }catch(error){
     loading.value = false;
     console.error(error)
   }
 };
+
 onBeforeMount(async () => {
   await getInvoices();
 })

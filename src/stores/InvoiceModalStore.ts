@@ -4,14 +4,12 @@ import { defineStore } from "pinia";
 interface InvoiceModalState {
   isOpen: boolean;
   invoice?: Invoice;
-  isSubmitEdit: boolean;
 }
 
 export const useInvoiceModalStore = defineStore('invoiceModal', {
   state: (): InvoiceModalState => ({
     isOpen: false,
-    invoice: undefined,
-    isSubmitEdit: false,
+    invoice: undefined
   }),
 
   actions: {
@@ -24,10 +22,6 @@ export const useInvoiceModalStore = defineStore('invoiceModal', {
 
     setInvoice(invoice: Invoice) {
       this.invoice = invoice;
-    },
-
-    toggleIsSubmitEdit() {
-      this.isSubmitEdit = !this.isSubmitEdit;
     },
   }
 })

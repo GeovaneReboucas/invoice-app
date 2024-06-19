@@ -22,17 +22,17 @@
       </div>
 
       <div class="right flex">
-        <button class="dark-purple" @click="openEditInvoiceModal">
+        <button class="dark-purple" @click="openEditInvoiceModal" v-if="!invoice.invoicePaid">
           Editar
         </button>
         <button class="red" @click="deleteInvoice(invoice.id)">
           Deletar
         </button>
-        <button class="green" v-if="invoice.invoicePending" @click="updateStatusToPaid(invoice.id)">
+        <button class="green" v-if="invoice.invoicePending" @click="updateStatusToPaid()">
           Marcar como pago
         </button>
         <button class="orange" v-if="invoice.invoiceDraft || invoice.invoicePaid"
-          @click="updateStatusToPending(invoice.id)">
+          @click="updateStatusToPending()">
           Marcar como pendente
         </button>
       </div>
@@ -104,12 +104,11 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, reactive, ref, watch } from 'vue';
+import { onBeforeMount, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import moment from 'moment';
-import { deleteDoc, doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseInit';
 
+import { firebaseService } from '@/firebase/firebaseService';
 import { useInvoiceModalStore } from '@/stores';
 import type { Invoice as InvoiceType } from '@/types/Invoice';
 
@@ -143,23 +142,10 @@ const invoice = reactive<InvoiceType>({
   invoiceTotal: 0,
 })
 
-async function findInvoiceById(id: InvoiceType['id']) {
-  return new Promise<InvoiceType>((resolve) => {
-    const documentRef = doc(db, 'invoices', id);
-    const unsub = onSnapshot(documentRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const invoiceData = { id: docSnapshot.id, ...docSnapshot.data() } as InvoiceType;
-        resolve(invoiceData);
-      }
-    });
-    return () => unsub();
-  });
-};
-
 async function onRefresh(){
   loading.value = true;
   const invoiceId = params.id as string;
-  const invoiceData = await findInvoiceById(invoiceId)
+  const invoiceData = await firebaseService.findById('invoices', invoiceId)
   if (!!invoiceData) {
     Object.assign(invoice, invoiceData);
   }
@@ -176,39 +162,33 @@ function openEditInvoiceModal() {
   useInvoiceModal.toggleVisibilityModal();
 }
 
-watch([() => useInvoiceModal.isSubmitEdit], async () => {
-  await onRefresh();
-});
-
 //Actions Header
 async function deleteInvoice(id: InvoiceType['id']) {
   try{
     loading.value = true;
-    await deleteDoc(doc(db, 'invoices', id));
+    await firebaseService.delete('invoices', id)
     alert('Fatura deletado com sucesso')
     router.push({ name: 'Invoices' })
     loading.value = false;
   }catch(error){ console.log('error', error) }
 }
 
-async function updateStatusToPaid(id: InvoiceType['id']) {
-  loading.value = true
-  const docRef = doc(db, 'invoices', id)
+async function updateStatusToPaid() {
+  loading.value = true;
   invoice.invoiceDraft = false;
   invoice.invoicePending = false;
   invoice.invoicePaid = true;
-  await setDoc(docRef, invoice);
-  loading.value = false
+  await firebaseService.save('invoices', invoice);
+  loading.value = false;
 }
 
-async function updateStatusToPending(id: InvoiceType['id']) {
-  loading.value = true
-  const docRef = doc(db, 'invoices', id)
+async function updateStatusToPending() {
+  loading.value = true;
   invoice.invoiceDraft = false;
   invoice.invoicePending = true;
   invoice.invoicePaid = false;
-  await setDoc(docRef, invoice);
-  loading.value = false
+  await firebaseService.save('invoices', invoice)
+  loading.value = false;
 }
 //
 </script>
