@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, onSnapshot, orderBy, query, setDoc, type OrderByDirection } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, setDoc, type OrderByDirection } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseInit';
 import moment from 'moment';
 
@@ -21,6 +21,11 @@ type BodyParams = {
   [key: string]: any;
 }
 
+type FirebaseData = {
+  id: string;
+  [key: string]: any;
+}
+
 class FirebaseService {
   constructor() {}
 
@@ -31,25 +36,38 @@ class FirebaseService {
 
   async findList(collectionName: string, queryParams: QueryParams = {}){
     try{
-      if(queryParams && !queryParams.orderBy){
+      if(!queryParams.orderBy){
         queryParams.orderBy = this._orderBy;
       }
 
-      return new Promise((resolve) => {
-        const collRefQuery = query(
-          collection(db, collectionName),
-          orderBy(queryParams.orderBy!.field, queryParams.orderBy!.direction)
-        );
-        const unsub = onSnapshot(collRefQuery, (snapShot) => {
-          const data = snapShot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          resolve(data);
-        });
-        return () => unsub();
+      const collectionDB = collection(db, collectionName);
+      const collectionQuery = query(collectionDB, orderBy(
+        queryParams.orderBy!.field,
+        queryParams.orderBy!.direction
+      ));
+      const querySnapshot = await getDocs(collectionQuery);
+      const data: FirebaseData[] = [];
+      querySnapshot.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
       });
+      return data;
     }catch(error){ console.error(error) }
   }
 
-  async save(collectionName: string, bodyParams: BodyParams = {}){
+  async findById(collectionName: string, id: string) {
+    return new Promise<FirebaseData>((resolve) => {
+      const documentRef = doc(db, collectionName, id);
+      const unsub = onSnapshot(documentRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const data = { id: docSnapshot.id, ...docSnapshot.data() };
+          resolve(data);
+        }
+      });
+      return () => unsub();
+    });
+  };
+
+  async save(collectionName: string, bodyParams: BodyParams){
     const {id, ...rest} = bodyParams;
 
     if(!id){
@@ -59,12 +77,15 @@ class FirebaseService {
       });
     }else{
       const docRef = doc(db, collectionName, id)
-      const resp = await setDoc(docRef, {
+      return await setDoc(docRef, {
         ...rest,
         updatedAt: moment().toISOString()
       });
-      return resp;
     }
+  }
+
+  async delete(collectionName: string, id: string){
+    return await deleteDoc(doc(db, collectionName, id));
   }
 }
 
