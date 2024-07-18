@@ -24,7 +24,6 @@ const routerLinkStyles = computed(() => ({
 <style scoped lang="scss">
 .router-link {
   border-radius: 0 20px 20px 0;
-  background-color: #141625;
   justify-content: center;
   padding: 22px;
   transition: filter 0.2s;

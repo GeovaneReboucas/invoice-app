@@ -8,14 +8,16 @@
       </div>
       <div class="right flex">
         <div class="filter flex" @click="toggleFilterMenu">
-          <span>Filtrar por status</span>
+          <span>
+            Filtrar por status<span v-if="filteredStatus">: </span>
+            <span class="filtered-status" v-if="filteredStatus">{{ filteredStatus }}</span>
+          </span>
           <img src="/icon-arrow-down.svg">
 
           <ul class="filter-menu" v-show="filterMenu">
-            <li>Draft</li>
-            <li>Pendente</li>
-            <li>Pago</li>
-            <li>Limpar Filtros</li>
+            <li v-for="(item, index) in invoiceStatus" :key="index" @click="handleFilterMenu(item)">
+              {{ item.label }}
+            </li>
           </ul>
         </div>
 
@@ -46,39 +48,68 @@ import { onBeforeMount, ref } from 'vue';
 import { useInvoiceModalStore } from '@/stores/index';
 import { firebaseService } from '@/firebase/firebaseService';
 import type { Invoice as InvoiceType } from '@/types/Invoice';
+import type { SearchBy } from '@/firebase/types';
 
 import Invoice from '@/components/Invoice.vue';
 import Loading from '@/components/Loading.vue';
 
-const loading = ref(true)
-const filterMenu = ref(false)
-function toggleFilterMenu() {
-  filterMenu.value = !filterMenu.value
-}
-
+//Invoice Modal
 const invoiceModal = useInvoiceModalStore()
 function newInvoice() {
   invoiceModal.toggleVisibilityModal();
 }
+//
 
+// Function that returns list of invoices
+const loading = ref(true)
 const invoices = ref<InvoiceType[]>([])
-async function getInvoices() {
-  loading.value = true;
-  try{
+async function getInvoices(searchBy?: SearchBy) {
+  try {
     loading.value = true;
-    const resp = await firebaseService.findList('invoices') as InvoiceType[];
-    invoices.value = resp;
+    const resp = await firebaseService.findList('invoices', {
+      searchBy
+    }) as InvoiceType[];
+    if (resp) {
+      invoices.value = resp;
+    }
     loading.value = false;
-  }catch(error){
+  } catch (error) {
     loading.value = false;
     console.error(error)
   }
 };
+//
 
 onBeforeMount(async () => {
   await getInvoices();
 })
 
+// Status filter
+const filterMenu = ref(false);
+function toggleFilterMenu() {
+  filterMenu.value = !filterMenu.value
+}
+
+const invoiceStatus = ref([
+  { label: 'Pago', property: 'invoicePaid' },
+  { label: 'Pendente', property: 'invoicePending' },
+  { label: 'Rascunho', property: 'invoiceDraft' },
+  { label: 'Limpar Filtro', property: undefined },
+]);
+const filteredStatus = ref<string | undefined>(undefined);
+async function handleFilterMenu(status: { label: string, property?: string }) {
+  filteredStatus.value = status.label;
+  if (!status.property) {
+    return await getInvoices();
+  }
+
+  return await getInvoices({
+    field: status.property,
+    condicion: '==',
+    value: true,
+  });
+}
+//
 </script>
 
 <style lang="scss" scoped>
@@ -115,6 +146,11 @@ onBeforeMount(async () => {
           margin-left: 12px;
           width: 9px;
           height: 5px;
+        }
+
+        .filtered-status {
+          color: #7c5dfa;
+          font-weight: 600;
         }
 
         .filter-menu {
@@ -160,21 +196,21 @@ onBeforeMount(async () => {
     }
   }
 
-  .empty{
+  .empty {
     margin-top: 16px;
     align-items: center;
 
-    img{
+    img {
       width: 214px;
       width: 200px;
     }
 
-    h3{
+    h3 {
       font-size: 20px;
       margin-top: 24px;
     }
 
-    p{
+    p {
       text-align: center;
       max-width: 224px;
       font-size: 14px;

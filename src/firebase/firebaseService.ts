@@ -1,57 +1,55 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, setDoc, type OrderByDirection } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseInit';
+import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, setDoc, where } from 'firebase/firestore';
 import moment from 'moment';
 
-type OrderBy = {
-  field: string;
-  direction: OrderByDirection;
-};
-
-type QueryParams = {
-  id?: string;
-  searchBy?: {
-    field: string;
-    value: string | number;
-  };
-  orderBy?: OrderBy;
-}
-
-type BodyParams = {
-  id?: string;
-  [key: string]: any;
-}
-
-type FirebaseData = {
-  id: string;
-  [key: string]: any;
-}
+import { db } from '@/firebase/firebaseInit';
+import type { BodyParams, FirebaseData, OrderBy, QueryParams } from './types';
 
 class FirebaseService {
-  constructor() {}
+  constructor() { }
 
   _orderBy: OrderBy = {
     field: 'createdAt',
     direction: 'asc',
   };
 
-  async findList(collectionName: string, queryParams: QueryParams = {}){
-    try{
-      if(!queryParams.orderBy){
+  async findList(collectionName: string, queryParams: QueryParams = {}) {
+    try {
+      //Checks if there is ordering
+      if (!queryParams.orderBy) {
         queryParams.orderBy = this._orderBy;
       }
 
+      //Starting collectionDB and query
       const collectionDB = collection(db, collectionName);
-      const collectionQuery = query(collectionDB, orderBy(
-        queryParams.orderBy!.field,
-        queryParams.orderBy!.direction
-      ));
+      let collectionQuery = query(
+        collectionDB,
+        orderBy(
+          queryParams.orderBy!.field,
+          queryParams.orderBy!.direction
+        )
+      );
+
+      //Checks if there is a where query
+      const { searchBy } = queryParams;
+      if (searchBy) {
+        collectionQuery = query(
+          collectionDB,
+          orderBy(
+            queryParams.orderBy!.field,
+            queryParams.orderBy!.direction
+          ),
+          where(searchBy!.field, searchBy!.condicion, searchBy!.value)
+        );
+      }
+
+      //Retrieving and returning documents
       const querySnapshot = await getDocs(collectionQuery);
       const data: FirebaseData[] = [];
       querySnapshot.forEach((doc) => {
         data.push({ id: doc.id, ...doc.data() });
       });
       return data;
-    }catch(error){ console.error(error) }
+    } catch (error) { console.error(error) }
   }
 
   async findById(collectionName: string, id: string) {
@@ -67,15 +65,15 @@ class FirebaseService {
     });
   };
 
-  async save(collectionName: string, bodyParams: BodyParams){
-    const {id, ...rest} = bodyParams;
+  async save(collectionName: string, bodyParams: BodyParams) {
+    const { id, ...rest } = bodyParams;
 
-    if(!id){
+    if (!id) {
       return await addDoc(collection(db, collectionName), {
         ...rest,
         createdAt: moment().toISOString()
       });
-    }else{
+    } else {
       const docRef = doc(db, collectionName, id)
       return await setDoc(docRef, {
         ...rest,
@@ -84,7 +82,7 @@ class FirebaseService {
     }
   }
 
-  async delete(collectionName: string, id: string){
+  async delete(collectionName: string, id: string) {
     return await deleteDoc(doc(db, collectionName, id));
   }
 }
