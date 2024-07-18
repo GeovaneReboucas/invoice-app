@@ -1,39 +1,48 @@
-# invoice-app
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/085225a6-76a4-4fe7-afcc-b5fef10b314a" alt="Invoice App Logo" height="72" />
+</div>
 
-This template should help get you started developing with Vue 3 in Vite.
+## Sobre
 
-## Recommended IDE Setup
+Invoice App é uma aplicação de gerenciamento de faturas que oferece ao usuário um controle detalhado de suas despesas. Desenvolvida como uma aplicação do Frontend Mentor, ela permite cadastrar participantes da conta e itens que compõem os gastos, proporcionando uma gestão financeira precisa.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Ademais, o sistema possui um controle de status fácil e prático, onde o usuário pode criar uma fatura como "Rascunho", o que permite revisões e edições antes da finalização. Quando a fatura está pronta para ser enviada, pode ser marcada como "Pendente", indicando que está aguardando pagamento. Após o pagamento ser realizado, a fatura pode ser atualizada para "Pago", mantendo um registro organizado.
 
-## Type Support for `.vue` Imports in TS
+## Layout
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+<div align="center"> 
+  <img src="https://github.com/user-attachments/assets/2232ba11-da94-48e8-9fc7-607dab49ffcf" width="100%" />
+</div>
 
-## Customize configuration
+## Tecnologias
+Foram usadas as tecnologias e ferramentas abaixo:
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+* [Vue 3](https://vuejs.org)
+* [TypeScript](https://www.typescriptlang.org/)
+* [Pinia](https://pinia.vuejs.org)
+* [Firebase](https://firebase.google.com/?hl=pt)
+* [Sass](https://sass-lang.com)
 
-## Project Setup
+## Como Usar 🤔
 
-```sh
-npm install
-```
+   ```
+   - Clone esse repositório:
+   $ git clone https://github.com/GeovaneReboucas/invoice-app
 
-### Compile and Hot-Reload for Development
+   - Entre no diretório:
+   $ cd invoice-app
 
-```sh
-npm run dev
-```
+   - Entre em cada diretório do projeto e instale as dependências de cada um:
+   $ yarn install
 
-### Type-Check, Compile and Minify for Production
+   - Crie um .env igual ao .env.example e coloque as variáveis do firebase.
+   
+   - Inicie a aplicação:
+   $ yarn dev
+   ```  
+   
+<hr/>
 
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+<p align="center">
+  Desenvolvido por <a href="https://github.com/GeovaneReboucas">Geovane Rebouças Bezerra</a>
+</p>
