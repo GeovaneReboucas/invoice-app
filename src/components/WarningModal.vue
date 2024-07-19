@@ -1,10 +1,12 @@
 <template>
   <div class="modal flex">
     <div class="modal-container">
+      <h2>Confirmar Ação</h2>
+      <hr>
       <p>Você tem certeza que gostaria de sair do formulário? Existem alterações não salvas</p>
       <div class="actions flex">
-        <button @click="closeModal" class="purple">Retornar</button>
-        <button @click="closeInvoice" class="red">Fechar</button>
+        <button @click="closeModal" class="purple">Cancelar</button>
+        <button @click="closeInvoice" class="red">Confirmar</button>
       </div>
     </div>
   </div>
@@ -36,21 +38,31 @@ function closeInvoice(){
   background-color: rgba(0, 0, 0, 0.5);
 
   .modal-container{
-    border-radius: 20px;
-    padding: 48px 32px;
+    border-radius: 12px;
+    padding: 24px 24px;
     max-width: 450px;
     background-color: #252945;
     color: #fff;
 
-    p{
-      text-align: center;
+    h2{
+      font-size: 18px;
+    }
+
+    hr{
+      margin: 18px 0;
+      border: 0;
+      height: 0.5px;
+      background: #504b4b;
     }
 
     .actions{
-      margin-top: 24px;
+      margin-top: 28px;
+      justify-content: flex-end;
 
       button{
-        flex: 1;
+        font-weight: 600;
+        border-radius: 14px;
+        padding: 12px 22px;
       }
     }
   }

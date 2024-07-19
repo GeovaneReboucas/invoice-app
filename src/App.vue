@@ -62,6 +62,17 @@ window.addEventListener('resize', checkScreen)
   font-family: "Poppins", sans-serif;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background-color: #1E2139;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7C5DFA;
+  border-radius: 8px;
+}
+
 .app {
   background-color: #141625;
   min-height: 100vh;

@@ -42,10 +42,16 @@ const { invoice } = defineProps<props>()
   gap: 16px;
   margin-bottom: 16px;
   color: #fff;
-  border-radius: 20px;
-  padding: 28px 32px;
+  border-radius: 10px;
+  padding: 20px 32px;
   background-color: #1e2139;
   align-items: center;
+  border: 1.4px solid #1e2139;
+  transition: all 0.4s;
+
+  &:hover{
+    border: 1.4px solid #7C5DFA;
+  }
 
   span {
     font-size: 13px;
